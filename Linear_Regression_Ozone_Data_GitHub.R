@@ -1,0 +1,58 @@
+
+#############################################################################################################################################################
+## Objective: Machine learning on ozone prediction with linear regression model                                                                             #
+## Data source: ozone data set                                                                                                                              #                                                                                          #
+#############################################################################################################################################################
+
+## DATA EXPLORATION
+## load the ozone data to R
+## make sure your working directory is set to the bootcamp base folder
+ozone.data <- read.table("C:/Users/muckam/Desktop/DataScienceBootcamp/Datasets/ozone.data", header=T)
+str(ozone.data)
+## visualize the data
+plot(ozone.data)
+
+## visualize with ggplot
+ggplot(ozone.data, aes(x=wind, y=ozone)) + geom_point()
+gg <- ggplot(ozone.data, aes(x=temperature, y=ozone))
+gg + geom_point(aes(color=wind))
+gg + geom_point(aes(size=radiation)) + geom_point(aes(color=wind))
+
+## BUILD MODEL
+## randomly choose 70% of the data set as training data
+set.seed(27)
+ozone.train.indices <- sample(1:nrow(ozone.data), 0.7*nrow(ozone.data), replace=F)
+ozone.train <- ozone.data[ozone.train.indices,]
+dim(ozone.train)
+## Use the remaining 30% as testing data
+ozone.test <- ozone.data[-ozone.train.indices,]
+dim(ozone.test)
+
+## fitting decision model on training set 
+ozone.lm.model <- lm(ozone ~ ., data=ozone.train)
+summary(ozone.lm.model)
+
+## VISUALIZE THE TRAINED MODEL
+layout(matrix(c(1,2,3,4),2,2)) # set 4 graphs/page 
+plot(ozone.lm.model)
+
+## MODEL EVALUATION
+## make prediction using trained model
+ozone.lm.predictions <- predict(ozone.lm.model, ozone.test)
+par(mfrow=c(3,1))
+plot(ozone.test$ozone, ozone.lm.predictions)
+## calculate residuals
+ozone.lm.residuals <- ozone.test$ozone - ozone.lm.predictions
+plot(ozone.test$ozone, ozone.lm.residuals)
+plot(ozone.lm.predictions, ozone.lm.residuals)
+## calculate Root Mean Squared Error (RMSE)
+ozone.lm.rmse <- sqrt(mean(ozone.lm.residuals^2))
+print(ozone.lm.rmse)
+## calculate Mean Absolute Error (MAE)
+ozone.lm.mae <- mean(abs(ozone.lm.residuals))
+print(ozone.lm.mae)
+## R squared (coefficient of determination)
+ozone.ss.tot <- sum((ozone.test$ozone - mean(ozone.test$ozone))^2)
+ozone.lm.ss.res <- sum(ozone.lm.residuals^2)
+ozone.lm.r2 <- 1 - ozone.lm.ss.res / ozone.ss.tot
+print(ozone.lm.r2)
